@@ -2,7 +2,6 @@
 python flask+canvas 跳一跳
 
 低配版跳一跳辅助<br>  
-安装有andriod SDK的电脑<br>  
 adb devices链接<br>  
 打开跳一跳<br>
 cd Scripts activate<br>  
