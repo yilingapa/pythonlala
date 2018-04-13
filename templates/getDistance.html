@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" >
+    <title>getDistance</title>
+    <style type="text/css">
+        *{margin: 0;padding: 0;}
+    </style>
+</head>
+<body>
+<img id="imgla" src="" style="width:900px;height:1600px;"/>
+<canvas id="map" width="900" height="1600" style="position: absolute;left:0;top:0"></canvas>
+</body>
+<script type="text/javascript">
+    var map=document.getElementById('map').getContext('2d'), imgla=document.getElementById('imgla');
+    map.font = "59px bold serif";
+    map.fillStyle = 'red'
+    map.lineWidth = 4
+    map.strokeStyle = 'red'
+    var myHeaders = new Headers({
+	    "Content-Type": "text/plain"
+    });
+    var fetchConfig={method:'GET',headers: myHeaders};
+    map.fillText('截屏传输中..', 10, 49);
+    fetch('/pullimg',fetchConfig)
+    .then(function(response){return response.text()})
+    .then(
+    	function(data){
+		    map.fillText(data, 10, 99);
+		    fetch('/picname',fetchConfig)
+		    .then(function(response){ return response.text()})
+		    .then(function(data){
+//		    	var img=new Image();
+//		    	img.onload=function(){
+//		    		map.drawImage(img,0,0,900,1600)
+//                }
+//                img.src='/static/'+data
+			    imgla.src='/static/'+data
+			    map.fillText('选择起点', 10, 159);
+		    })
+        }
+    );
+    var point=1,lala=[],distance,ratio=1.7;
+    function handel(event){
+	    var px=event.layerX,py=event.layerY;
+	    console.info( point+' point x:'+px+',y:'+py)
+	    lala.push({px:px,py:py})
+        map.arc(px,py,5,0,Math.PI*2,true)
+        map.fill();
+	    document.getElementById('map').removeEventListener('click',handel)
+	    point+=1
+	    map.fillText('选择目标', 10, 219);
+    }
+    function handella(event){
+    	var px=event.touches[0].pageX,py=event.touches[0].pageY;
+    	map.clearRect(0,0,900,1600)
+    	map.beginPath()
+        map.moveTo(lala[0].px,lala[0].py)
+	    map.arc(lala[0].px,lala[0].py,5,0,Math.PI*2,true)
+	    map.fill();
+        map.lineTo(px,py)
+        map.moveTo(px-20,py)
+	    map.lineTo(px+20,py)
+	    map.moveTo(px,py-20)
+	    map.lineTo(px,py+20)
+        map.stroke();
+    }
+    function handellala(event){
+    	var px=event.changedTouches[0].clientX,py=event.changedTouches[0].clientY;
+	    if(point===2) {
+		    distance = parseInt(Math.sqrt(Math.pow((lala[0].px - px), 2) + Math.pow((lala[0].py - py), 2)))
+		    console.info('distance:' + distance + '  ratio:' + ratio)
+		    time = distance * ratio
+		    console.info('time:' + time)
+		    fetch('/gettime?time=' + parseInt(time), fetchConfig)
+		    .then(function (response) {
+			    window.location.reload()
+		    })
+	    }
+    }
+    document.getElementById('map').addEventListener('click',handel)
+    document.getElementById('map').addEventListener('touchend',handellala)
+    document.getElementById('map').addEventListener('touchmove',handella)
+</script>
+</html>
